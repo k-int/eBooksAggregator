@@ -56,8 +56,7 @@ class Platform {
       platform = Platform.findByNormname(norm_name)
 
       if ( !platform ) {
-        platform = new Platform(impId:params.impId,
-                                name:params.name,
+        platform = new Platform(name:params.name,
                                 normname:norm_name,
                                 provenance:params.provenance,
                                 primaryUrl:params.primaryUrl,

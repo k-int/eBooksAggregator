@@ -2,6 +2,8 @@
     @Grab(group='net.sourceforge.nekohtml', module='nekohtml', version='1.9.14'),
     @Grab(group='org.codehaus.groovy.modules.http-builder', module='http-builder', version='0.5.1'),
     @Grab(group='xerces', module='xercesImpl', version='2.9.1'),
+    @Grab(group='org.apache.httpcomponents', module='httpmime', version='4.1.2'),
+    @Grab(group='org.apache.httpcomponents', module='httpclient', version='4.0'),
     @Grab(group='org.apache.poi', module='poi', version='3.10-FINAL'),
     @Grab(group='org.apache.poi', module='poi-ooxml', version='3.10-FINAL') ])
 
@@ -18,6 +20,14 @@ import org.apache.poi.xssf.usermodel.*;
 import org.apache.poi.xssf.model.*;
 import org.apache.poi.*;
 
+import groovy.util.slurpersupport.GPathResult
+import org.apache.http.*
+import org.apache.http.protocol.*
+
+
+// Usually run as
+// groovy ./import.groovy ~/Dropbox/eBooksReport/Dawson\ titles\ 1\ of\ 5.xlsx 
+//
 
 println("Loading ${args[0]}");
 loadWorkbook(args[0])
@@ -73,8 +83,8 @@ def loadWorkbook(filename) {
     def default_Dates=title_row.getCell(col++)?.toString()
     def custom_Date_From=title_row.getCell(col++)?.toString()
     def custom_Date_To=title_row.getCell(col++)?.toString()
-    def title_Id=title_row.getCell(col++)?.toString()
-    def publication_Date=title_row.getCell(col++)?.toString()
+    def title_Id=title_row.getCell(col++)?.getNumericCellValue().longValue()
+    def publication_Date=title_row.getCell(col++)?.getNumericCellValue().longValue()
     def edition=title_row.getCell(col++)?.toString()
     def publisher=title_row.getCell(col++)?.toString()
     def public_Note=title_row.getCell(col++)?.toString()
@@ -108,9 +118,9 @@ def loadWorkbook(filename) {
     api.request(POST) { request ->
       def record = prettyPrint(toJson(assertion))
       requestContentType = 'multipart/form-data'
-      uri.path="/eba/api/assert"
+      uri.path="/eba/api/assertTitle"
       def multipart_entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-      def uploaded_file_body_part = new org.apache.http.entity.mime.content.ByteArrayBody(record.getBytes('UTF8'), 'application/json', "${value.id}.json");
+      def uploaded_file_body_part = new org.apache.http.entity.mime.content.ByteArrayBody(record.getBytes('UTF8'), 'application/json', "record.json");
       multipart_entity.addPart("tf", uploaded_file_body_part);
 
       request.entity = multipart_entity

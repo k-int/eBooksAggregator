@@ -17,6 +17,7 @@ class TitleInstance {
   static auditable = true
 
   String title
+  String pubdate
   String normTitle
   String keyTitle
   String sortTitle
@@ -33,6 +34,7 @@ class TitleInstance {
   static mapping = {
            id column:'ti_id'
         title column:'ti_title'
+      pubdate column:'ti_pubdate'
     normTitle column:'ti_norm_title'
      keyTitle column:'ti_key_title'
       version column:'ti_version'
@@ -46,6 +48,7 @@ class TitleInstance {
     status(nullable:true, blank:false);
     type(nullable:true, blank:false);
     title(nullable:true, blank:false,maxSize:1024);
+    pubdate(nullable:true, blank:false);
     normTitle(nullable:true, blank:false,maxSize:1024);
     sortTitle(nullable:true, blank:false,maxSize:1024);
     keyTitle(nullable:true, blank:false,maxSize:1024);
@@ -111,7 +114,7 @@ class TitleInstance {
     }
     
     if (!result) {
-      static_logger.debug("No result - creating new title");
+      static_logger.debug("No result - creating new title ${title}");
       result = new TitleInstance(title:title, impId:java.util.UUID.randomUUID().toString());
       result.save(flush:true);
 
@@ -234,7 +237,7 @@ class TitleInstance {
 
 
   public static String generateNormTitle(String input_title) {
-    def result = input_title.replaceAll('&',' and ');
+    def result = new String(input_title.toString()).replaceAll('&',' and ');
     result = result.trim();
     result = result.replaceAll("\\s+", " ");
     result = result.toLowerCase();
@@ -245,7 +248,7 @@ class TitleInstance {
   public static String generateKeyTitle(String s) {
     def result = null
     if ( s != null ) {
-        s = s.replaceAll('&',' and ');
+        s = new String(s.toString()).replaceAll('&',' and ');
         s = s.trim(); // first off, remove whitespace around the string
         s = s.replaceAll("\\s+", " ");
         s = s.toLowerCase(); // then lowercase it
@@ -262,7 +265,7 @@ class TitleInstance {
             if ( i.hasNext() )
               b.append(' ');
         }
-        result asciify(b.toString()); // find ASCII equivalent to characters 
+        result = asciify(b.toString()); // find ASCII equivalent to characters 
     }
     result
   }

@@ -55,7 +55,7 @@ class HomeController {
       log.debug("query: ${query_str}");
 
       try {
-       def search = esclient.search{
+        def search = esclient.search{
           indices "olid"
           types "tli.DirectoryEntry"
           source {
@@ -83,42 +83,38 @@ class HomeController {
               }
             }
           }
-        }
+      }
+      finally {
+      }
 
-        // log.debug("Assign result.hits... ${search.response.hits}");
+      result.hits = search.response.hits
+      result.resultsTotal = search.response.hits.totalHits
 
-        result.hits = search.response.hits
-        result.resultsTotal = search.response.hits.totalHits
+      result.lastrec = params.offset + params.max
+      if ( result.lastrec > result.resultsTotal )
+        result.lastrec = result.resultsTotal
 
-        result.lastrec = params.offset + params.max
-        if ( result.lastrec > result.resultsTotal )
-          result.lastrec = result.resultsTotal
+      if(search.response.hits.maxScore == Float.NaN) {
+          search.response.hits.maxScore = 0;
+      }
 
-        if(search.response.hits.maxScore == Float.NaN) {
-            search.response.hits.maxScore = 0;
-        }
-
-        if ( search.response.facets != null ) {
-          result.facets = [:]
-          search.response.facets.facets.each { facet ->
-            log.debug("Facet: ${facet.key}");
-            def facet_values = []
-            facet.value.entries.each { fe ->
-              if ( fe.term != null ) {
-                log.debug('adding to '+ facet.key + ': ' + fe.term + ' (' + fe.count + ' )')
-                facet_values.add([term: fe.term,display:fe.term,count:"${fe?.count}"])
-              }
+      if ( search.response.facets != null ) {
+        result.facets = [:]
+        search.response.facets.facets.each { facet ->
+          log.debug("Facet: ${facet.key}");
+          def facet_values = []
+          facet.value.entries.each { fe ->
+            if ( fe.term != null ) {
+              log.debug('adding to '+ facet.key + ': ' + fe.term + ' (' + fe.count + ' )')
+              facet_values.add([term: fe.term,display:fe.term,count:"${fe?.count}"])
             }
-
-            result.facets[facet.key] = facet_values
           }
-        }
 
-        render(view:'results',model:result);
+          result.facets[facet.key] = facet_values
+        }
       }
-      catch ( Exception e ) {
-        log.error("Problem",e);
-      }
+
+      render(view:'results',model:result);
     }
     else {
       render(view:'index');
