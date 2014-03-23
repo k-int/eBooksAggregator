@@ -1,0 +1,4 @@
+No license has yet been assigend.
+
+Knowledge Integration are committed to open source licensing, some outstanding issues with open source software in HE mean that we're not able to put a public / OS license on this code yet. We'll sort it ASAP - apologies for any hassle caused! The code is published openly here, but no license can be granted at the moment.
+
