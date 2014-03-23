@@ -23,6 +23,26 @@ println("Loading ${args[0]}");
 loadWorkbook(args[0])
 
 def loadWorkbook(filename) {
+
+  def url = "http://localhost:8080"
+
+  def api = new RESTClient(url)
+  def rest_upload_pass = ""
+  System.in.withReader {
+    print 'upload pass:'
+    rest_upload_pass = it.readLine()
+  }
+
+  // Add preemtive auth
+  api.client.addRequestInterceptor( new HttpRequestInterceptor() {
+    void process(HttpRequest httpRequest, HttpContext httpContext) {
+      String auth = "admin:${rest_upload_pass}"
+      String enc_auth = auth.bytes.encodeBase64().toString()
+        httpRequest.addHeader('Authorization', 'Basic ' + enc_auth);
+      }
+    })
+
+
   def input_stream = new File(filename).newInputStream()
 
   // HSSFWorkbook wb = new HSSFWorkbook(input_stream);
@@ -84,6 +104,28 @@ def loadWorkbook(filename) {
       platformUrl:default_URL,
       additionalUrl:custom_URL
     ]
+
+    api.request(POST) { request ->
+      def record = prettyPrint(toJson(assertion))
+      requestContentType = 'multipart/form-data'
+      uri.path="/eba/api/assert"
+      def multipart_entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+      def uploaded_file_body_part = new org.apache.http.entity.mime.content.ByteArrayBody(record.getBytes('UTF8'), 'application/json', "${value.id}.json");
+      multipart_entity.addPart("tf", uploaded_file_body_part);
+
+      request.entity = multipart_entity
+
+      response.success = { resp, data ->
+        println("OK - Record uploaded");
+      }
+
+      response.failure = { resp ->
+        println("Error - ${resp.status}");
+        System.out << resp
+        println("Done\n\n");
+      }
+    }
+
 
     println("assertion: ${assertion}");
   }
