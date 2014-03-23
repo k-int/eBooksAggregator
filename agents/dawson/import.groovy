@@ -69,22 +69,15 @@ def loadWorkbook(filename) {
     XSSFRow title_row = firstSheet.getRow(rownum)
     int col=0
     println("Cell type of isxn is ${title_row.getCell(1).getCellType()}");
-    def title=title_row.getCell(col++)?.toString()
-    def ixsn = null;
-    if ( title_row.getCell(1).getCellType() == 0 ) {
-      Double d = title_row.getCell(col++)?.getNumericCellValue()
-      isxn="${d.longValue()}"
-    }
-    else {
-      isxn=title_row.getCell(col++)?.toString()
-    }
+    def title=getStrValue(title_row.getCell(col++))
+    def isxn = getStrValue(title_row.getCell(col++))
     def type=title_row.getCell(col++)?.toString()
     def status=title_row.getCell(col++)?.toString()
     def default_Dates=title_row.getCell(col++)?.toString()
     def custom_Date_From=title_row.getCell(col++)?.toString()
     def custom_Date_To=title_row.getCell(col++)?.toString()
     def title_Id=title_row.getCell(col++)?.getNumericCellValue().longValue()
-    def publication_Date=title_row.getCell(col++)?.getNumericCellValue().longValue()
+    def publication_Date=getStrValue(title_row.getCell(col++)) // ?.getNumericCellValue()?.longValue()
     def edition=title_row.getCell(col++)?.toString()
     def publisher=title_row.getCell(col++)?.toString()
     def public_Note=title_row.getCell(col++)?.toString()
@@ -142,3 +135,20 @@ def loadWorkbook(filename) {
 
   input_stream.close();
 }
+
+def getStrValue(cell) {
+  def result=null
+  if ( cell != null ) {
+    if ( cell.getCellType() == 0 ) {
+      Double d = cell.getNumericCellValue()
+      if ( d != null ) {
+        result = "${d?.longValue()}"
+      }
+    }
+    else {
+      result = cell.toString()
+    }
+  }
+  result
+}
+

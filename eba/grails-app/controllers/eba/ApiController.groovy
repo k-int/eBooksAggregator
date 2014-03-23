@@ -33,10 +33,13 @@ class ApiController {
         def pub_org = Org.lookupOrCreate(json.publisher, null, null, [pubname:json.publisher], null)
         
         if ( title_obj.orgs == null ) {
-          title_obj.orgs = [pub_org]
+          title_obj.orgs = []
         }
 
         title_obj.save()
+
+        def publisher_role = RefdataCategory.lookupOrCreate('OrgRole','Publisher')
+        def pub_or = new OrgRole(title:title_obj, org:pub_org,roleType:publisher_role).save()
 
         def platform_obj = Platform.lookupOrCreatePlatform(name:json.platformName)
 
