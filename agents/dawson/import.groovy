@@ -68,64 +68,66 @@ def loadWorkbook(filename) {
     // HSSFRow title_row = firstSheet.getRow(rownum)
     XSSFRow title_row = firstSheet.getRow(rownum)
     int col=0
-    println("Cell type of isxn is ${title_row.getCell(1).getCellType()}");
-    def title=getStrValue(title_row.getCell(col++))
-    def isxn = getStrValue(title_row.getCell(col++))
-    def type=title_row.getCell(col++)?.toString()
-    def status=title_row.getCell(col++)?.toString()
-    def default_Dates=title_row.getCell(col++)?.toString()
-    def custom_Date_From=title_row.getCell(col++)?.toString()
-    def custom_Date_To=title_row.getCell(col++)?.toString()
-    def title_Id=title_row.getCell(col++)?.getNumericCellValue().longValue()
-    def publication_Date=getStrValue(title_row.getCell(col++)) // ?.getNumericCellValue()?.longValue()
-    def edition=title_row.getCell(col++)?.toString()
-    def publisher=title_row.getCell(col++)?.toString()
-    def public_Note=title_row.getCell(col++)?.toString()
-    def display_Public_Note=title_row.getCell(col++)?.toString()
-    def location_Note=title_row.getCell(col++)?.toString()
-    def display_Location_Note=title_row.getCell(col++)?.toString()
-    def default_URL=title_row.getCell(col++)?.toString()
-    def custom_URL=title_row.getCell(col++)?.toString()
-    def display_In_360_MARC_Updates=title_row.getCell(col++)?.toString()
-    def display_In_360_Link=title_row.getCell(col++)?.toString()
-    def display_In_360_Core=title_row.getCell(col++)?.toString()
-    def display_In_Summon=title_row.getCell(col++)?.toString()
+    if ( title_row.getCell(1) != null ) {
+      println("Cell type of isxn is ${title_row.getCell(1).getCellType()}");
+      def title=getStrValue(title_row.getCell(col++))
+      def isxn = getStrValue(title_row.getCell(col++))
+      def type=title_row.getCell(col++)?.toString()
+      def status=title_row.getCell(col++)?.toString()
+      def default_Dates=title_row.getCell(col++)?.toString()
+      def custom_Date_From=title_row.getCell(col++)?.toString()
+      def custom_Date_To=title_row.getCell(col++)?.toString()
+      def title_Id=title_row.getCell(col++)?.getNumericCellValue().longValue()
+      def publication_Date=getStrValue(title_row.getCell(col++)) // ?.getNumericCellValue()?.longValue()
+      def edition=title_row.getCell(col++)?.toString()
+      def publisher=title_row.getCell(col++)?.toString()
+      def public_Note=title_row.getCell(col++)?.toString()
+      def display_Public_Note=title_row.getCell(col++)?.toString()
+      def location_Note=title_row.getCell(col++)?.toString()
+      def display_Location_Note=title_row.getCell(col++)?.toString()
+      def default_URL=title_row.getCell(col++)?.toString()
+      def custom_URL=title_row.getCell(col++)?.toString()
+      def display_In_360_MARC_Updates=title_row.getCell(col++)?.toString()
+      def display_In_360_Link=title_row.getCell(col++)?.toString()
+      def display_In_360_Core=title_row.getCell(col++)?.toString()
+      def display_In_Summon=title_row.getCell(col++)?.toString()
 
-    def assertion = [
-      title:title,
-      titleIdentifiers:[
-        (type=='BOOK'?'ISBN':'ISSN'):isxn
-      ],
-      platformIdentifiers:[
-        'DawsonTitleId':title_Id
-      ],
-      publisher:publisher,
-      publication_date:publication_Date,
-      edition:edition,
-      platformName:'Dawson',
-      paltformId:'Dawson',
-      platformUrl:default_URL,
-      additionalUrl:custom_URL
-    ]
-
-    api.request(POST) { request ->
-      def record = prettyPrint(toJson(assertion))
-      requestContentType = 'multipart/form-data'
-      uri.path="/eba/api/assertTitle"
-      def multipart_entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
-      def uploaded_file_body_part = new org.apache.http.entity.mime.content.ByteArrayBody(record.getBytes('UTF8'), 'application/json', "record.json");
-      multipart_entity.addPart("tf", uploaded_file_body_part);
-
-      request.entity = multipart_entity
-
-      response.success = { resp, data ->
-        println("OK - Record uploaded");
-      }
-
-      response.failure = { resp ->
-        println("Error - ${resp.status}");
-        System.out << resp
-        println("Done\n\n");
+      def assertion = [
+        title:title,
+        titleIdentifiers:[
+          (type=='BOOK'?'ISBN':'ISSN'):isxn
+        ],
+        platformIdentifiers:[
+          'DawsonTitleId':title_Id
+        ],
+        publisher:publisher,
+        publication_date:publication_Date,
+        edition:edition,
+        platformName:'Dawson',
+        paltformId:'Dawson',
+        platformUrl:default_URL,
+        additionalUrl:custom_URL
+      ]
+  
+      api.request(POST) { request ->
+        def record = prettyPrint(toJson(assertion))
+        requestContentType = 'multipart/form-data'
+        uri.path="/eba/api/assertTitle"
+        def multipart_entity = new MultipartEntity(HttpMultipartMode.BROWSER_COMPATIBLE);
+        def uploaded_file_body_part = new org.apache.http.entity.mime.content.ByteArrayBody(record.getBytes('UTF8'), 'application/json', "record.json");
+        multipart_entity.addPart("tf", uploaded_file_body_part);
+  
+        request.entity = multipart_entity
+  
+        response.success = { resp, data ->
+          println("OK - Record uploaded");
+        }
+  
+        response.failure = { resp ->
+          println("Error - ${resp.status}");
+          System.out << resp
+          println("Done\n\n");
+        }
       }
     }
 

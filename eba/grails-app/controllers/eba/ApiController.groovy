@@ -44,11 +44,19 @@ class ApiController {
         def platform_obj = Platform.lookupOrCreatePlatform(name:json.platformName)
 
 
-        TitleInstancePlatform tip = new TitleInstancePlatform(title:title_obj,platform:platform_obj,hostPlatformURL:json.platformUrl).save()
+        // Do we already have a tip
+        def tip_count = TitleInstancePlatform.executeQuery("select count(*) from TitleInstancePlatform as tip where tip.title = ? and tip.platform=?",[title_obj,platform_obj])[0]
+        if ( tip_count == 0 ) {
+          log.debug("Create new tip - ${json.title}");
+          TitleInstancePlatform tip = new TitleInstancePlatform(title:title_obj,platform:platform_obj,hostPlatformURL:json.platformUrl).save()
 
-        json.platformIdentifiers.each { k,v ->
-          def ti_id = Identifier.lookupOrCreateCanonicalIdentifier(k,v)
-          def io = new IdentifierOccurrence(identifier:ti_id, ti:title_obj).save(flush:true)
+          json.platformIdentifiers.each { k,v ->
+            def ti_id = Identifier.lookupOrCreateCanonicalIdentifier(k,v)
+            def io = new IdentifierOccurrence(identifier:ti_id, ti:title_obj).save(flush:true)
+          }
+        }
+        else {
+          log.debug("TIP already exists - skipping");
         }
 
         //log.debug("Got record:${record}");
